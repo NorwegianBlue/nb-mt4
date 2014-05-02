@@ -38,7 +38,8 @@ extern int MN1_Width = 2;
 //+------------------------------------------------------------------+
 int init()
 {
-  return(0);
+  ChartSetInteger(ChartID(), CHART_EVENT_OBJECT_CREATE, true);
+  return(INIT_SUCCEEDED);
 }
 
 
@@ -50,10 +51,11 @@ int deinit()
   return(0);
 }
 
+
 //+------------------------------------------------------------------+
 //| Custom indicator iteration function                              |
 //+------------------------------------------------------------------+
-int start()
+void Refresh()
 {
   for (int objidx=0; objidx<ObjectsTotal(); objidx++)
   {
@@ -108,10 +110,22 @@ int start()
       }
     }
   }
-
-  return(0);
 }
 
+
+void OnChartEvent(const int id,         // Event ID
+                  const long& lparam,   // Parameter of type long event
+                  const double& dparam, // Parameter of type double event
+                  const string& sparam  // Parameter of type string events
+  )
+{
+  Refresh();
+}
+
+int start()
+{
+  return (0);
+}
 
 //+------------------------------------------------------------------+
 
