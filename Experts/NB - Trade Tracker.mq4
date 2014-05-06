@@ -1,12 +1,14 @@
 //+------------------------------------------------------------------+
 //|                                           NB - Trade Tracker.mq4 |
-//|                             Copyright © 2011-2013, NorwegianBlue |
+//|                             Copyright © 2011-2014, NorwegianBlue |
 /*
   Watches your trades, keeps stats like MAE MFE and logs results into a form convenient
   for importing into spreadsheets.
 
   - Attach to a chart that receives ticks frequently, such as eur/usd
   
+  Version 7
+    Support MT4 Build 600+  
   Version 6
     Handle commission by merging it with swap
   Version 5
@@ -21,19 +23,20 @@
 // TODO:   Find the case where MaxSL goes wrong when an at-market order is entered
 
 //+------------------------------------------------------------------+
-#property copyright "Copyright © 2011-2013, NorwegianBlue"
+#property copyright "Copyright © 2011-2014, NorwegianBlue"
 #property link      "http://sites.google.com/site/norwegianbluesmt4junkyard"
+
 
 #include <stderror.mqh>
 #include <http51.mqh>
 #include <WinUser32.mqh>
 
-extern string _VERSION_6 = "6";
+extern string _VERSION_7 = "7";
 
 extern string _1 = "__ Output _______";
 extern string StateFile = "NBTT_state.csv";
 extern string ResultsFile = "NBTT_results.csv";
-extern string AppName = "tt";
+extern string AppName = "test";
 
 extern string Log_HTTP = ""; //http://forex.plasmatech.com/trade_complete.php?";
 extern string Log_HTTP2 = "https://docs.google.com/macros/exec?service=AKfycbzhcc5KZZ6cpaFU9gVQ1q4R9_vx7qqZO7uhn8He&";
@@ -105,7 +108,7 @@ string DebugStr[];
 
 bool FirstIteration;
 
-int init()
+void OnInit()
 {
   FirstIteration = true;
   
@@ -129,20 +132,20 @@ int init()
     LX[i+1] = LX[i] + LW[i];
 
   _LoadState();
-  
-  return(0);
+
+  _CheckForChanges();
+  _UpdateDisplay();  
 }
 
 
-int deinit()
+void OnDeinit(const int reason)
 {
   Comment("");
   DeleteAllObjectsWithPrefix(pfx);
-  return(0);
 }
 
 
-int start()
+void OnTick()
 {
   while(!IsStopped())
   {
@@ -152,101 +155,8 @@ int start()
     _UpdateDisplay();  
     _SaveStatePeriodically();
     
-    _TickAllCharts();
-    
     Sleep(RefreshIntervalMS);
   }
-
-  return(0);
-}
-
-
-
-#import "user32.dll"
-	int RegisterWindowMessageA(string lpString); 
-	int GetParent(int hWnd);
-#import
-
-int MT4InternalMsg = 0;
-
-void _TickAllCharts()
-{
-   int chartsCount = 0;
-   int ownWindowHandle = 0;
-   int parentHandle = 0;
-   int firstChartHandle = 0;
-   int chartHandle = 0;
-   int chartsChildHandle = 0;
-   int sleepingMillisec = 0;
-   bool isPostingSuccess = false;
-
-      chartsCount = 0;
-      ownWindowHandle = WindowHandle(Symbol(), Period());
-      if (ownWindowHandle > 0) {
-      
-         parentHandle = GetParent(ownWindowHandle);
-         if (parentHandle > 0) {
-         
-            firstChartHandle = GetWindow(parentHandle, GW_HWNDFIRST);
-            if (firstChartHandle > 0) {
-            
-               chartHandle = firstChartHandle;
-               while (chartHandle > 0) {
-                  chartsCount = chartsCount + 1;
-                  chartHandle = GetWindow(chartHandle, GW_HWNDNEXT);
-               }
-            } else {
-               Print("Cannot get firstChartHandle.");
-               chartsCount = -1;
-            }
-         } else {
-            Print("Cannot get parentHandle.");
-            chartsCount = -1;
-         }
-      } else {
-         Print("Cannot get ownWindowHandle.");
-         chartsCount = -1;
-      }
-
-      if (chartsCount > 0) {
-         //sleepingMillisec = TickRateMillisec / chartsCount;
-         firstChartHandle = GetWindow(parentHandle, GW_HWNDFIRST);
-         if (firstChartHandle > 0) {
-         
-            MT4InternalMsg = 0;
-            chartHandle = firstChartHandle;
-            while (chartHandle > 0) {
-               if (MT4InternalMsg == 0) {
-                  MT4InternalMsg = RegisterWindowMessageA("MetaTrader4_Internal_Message");
-               }
-               if (MT4InternalMsg != 0) {
-                  chartsChildHandle = GetWindow(chartHandle, GW_CHILD);
-                  if (chartsChildHandle > 0) {
-
-                     isPostingSuccess = PostMessageA(chartsChildHandle, MT4InternalMsg, 2, 1);
-                     if (!isPostingSuccess) {
-                        Print("Cannot post tick.");
-                        break;
-                     }
-                  } else {
-                     Print("Cannot get chartsChildHandle.");
-                     break;
-                  }
-               } else {
-                  Print("Cannot register MT4InternalMsg.");
-                  break;
-               }
-               chartHandle = GetWindow(chartHandle, GW_HWNDNEXT);
-               Sleep(1);
-               //Sleep(sleepingMillisec);
-               //sleepCount = sleepCount + sleepingMillisec;
-            }
-         } else {
-            Print("Cannot get firstChartHandle.");
-         }
-      } else {
-         Print("Cannot find charts.");
-      }
 }
 
 
@@ -503,8 +413,11 @@ void _UpdateDisplay()
   int col = 0;
   for (col = 0; col < ArraySize(LXHEADER); col++)
   {
-    SetLabel("lxhead2"+col,0, _GetX(col), _GetY(1) -5, LXHEADER2[col], TextColor);
-    SetLabel("lxhead"+col, 0, _GetX(col), _GetY(0), LXHEADER[col], TextColor);
+    SetLabel("lxhead"+col, 0, _GetX(col), _GetY(0), LXHEADER[col], TextColor, 8);
+    ObjectSetInteger(0, "lxhead"+col, OBJPROP_ZORDER, 1);
+
+    SetLabel("lxhead2"+col,0, _GetX(col), _GetY(1) -5, LXHEADER2[col], TextColor, 8);
+    ObjectSetInteger(0, "lxhead2"+col, OBJPROP_ZORDER, 1);
   }
   
   _DrawBackground(_GetY(1), Background);
@@ -516,7 +429,8 @@ void _UpdateDisplay()
   {
     if (Ticket[i] != 0)
     {
-      OrderSelect(Ticket[i], SELECT_BY_TICKET);
+      if (!OrderSelect(Ticket[i], SELECT_BY_TICKET))
+        continue;
       int otf = OTF(OrderType());
       double closePrice = _GetClosePrice(Ticket[i]);     
       int y = _GetY(row);
@@ -701,8 +615,10 @@ void _DrawBackground(int y, color clr)
 {
   string bkg = "gggggggggggggggggggggggggggggggggggggggggggggggggggggg";
   
-  SetLabel("bkga"+y, 0, 0, y, bkg, clr, 0, "Webdings");
-  SetLabel("bkgb"+y, 0, 400, y, bkg, clr, 0, "Webdings");
+  if (ObjectFind(pfa+"bkga"+y) < 0)
+    ObjectCreate(pfx+"bkga"+y, OBJ_RECTANGLE_LABEL, 0, 
+  //SetLabel("bkga"+y, 0, 0, y, bkg, clr, 0, "Webdings");
+  //SetLabel("bkgb"+y, 0, 400, y, bkg, clr, 0, "Webdings");
 }
 
 
@@ -1175,7 +1091,7 @@ void DeleteAllObjectsWithPrefix(string prefix)
 }
 
 
-void SetLabel(string name, int corner, int x, int y, string text, color clr=CLR_NONE, int size=0, string face=fontName)
+void SetLabel(string name, int corner, int x, int y, string text, color clr=NULL, int size=0, string face=fontName)
 {
   if (text == "")
     return;
@@ -1192,11 +1108,11 @@ void SetLabel(string name, int corner, int x, int y, string text, color clr=CLR_
   if (ObjectFind(pfx+name) < 0)
     ObjectCreate(pfx+name, OBJ_LABEL, windowNumber, 0,0);
  
+  ObjectSetInteger(0, pfx+name, OBJPROP_CORNER, corner);
+
   ObjectSet(pfx+name, OBJPROP_XDISTANCE, x);
   ObjectSet(pfx+name, OBJPROP_YDISTANCE, y);
   ObjectSetText(pfx+name, text, size, face, clr);
-  
-  ObjectSet(pfx+name, OBJPROP_CORNER, corner);
 }
 
 

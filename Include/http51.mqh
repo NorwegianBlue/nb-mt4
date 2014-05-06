@@ -1,10 +1,10 @@
 #import "http51.dll"
 
-string httpGET    (string URL, int  status []);
-string httpDELETE (string URL, int  status []);
-string httpPUT    (string URL, string RequestBody, int  status []);
-string httpPOST   (string URL, string RequestBody, int  status []);
-string httpTRACE  (string URL, string RequestBody, int  status []);
+string httpGET    (string URL, int&  status []);
+string httpDELETE (string URL, int&  status []);
+string httpPUT    (string URL, string RequestBody, int&  status []);
+string httpPOST   (string URL, string RequestBody, int&  status []);
+string httpTRACE  (string URL, string RequestBody, int&  status []);
 
 string URLEncode(string toCode) {
   int max = StringLen(toCode);
