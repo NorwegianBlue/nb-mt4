@@ -437,9 +437,9 @@ void _UpdateDisplay()
       string s = "";
 
       double pointFactor = GuessPointFactor(OrderSymbol());
-      printf("pointFactor: %f", pointFactor);
-      printf("MarketInfo(OrderSymbol(), MODE_POINT): %f", MarketInfo(OrderSymbol(), MODE_POINT));
-      printf("OrderOpenPrice(): %f", OrderOpenPrice());
+      //printf("pointFactor: %f", pointFactor);
+      //printf("MarketInfo(OrderSymbol(), MODE_POINT): %f", MarketInfo(OrderSymbol(), MODE_POINT));
+      //printf("OrderOpenPrice(): %f", OrderOpenPrice());
 
       double riskPips;
       double stopPct;
@@ -615,8 +615,8 @@ void _DrawBackground(int y, color clr)
 {
   string bkg = "gggggggggggggggggggggggggggggggggggggggggggggggggggggg";
   
-  if (ObjectFind(pfa+"bkga"+y) < 0)
-    ObjectCreate(pfx+"bkga"+y, OBJ_RECTANGLE_LABEL, 0, 
+  //if (ObjectFind(pfa+"bkga"+y) < 0)
+  //  ObjectCreate(pfx+"bkga"+y, OBJ_RECTANGLE_LABEL, 0, 
   //SetLabel("bkga"+y, 0, 0, y, bkg, clr, 0, "Webdings");
   //SetLabel("bkgb"+y, 0, 400, y, bkg, clr, 0, "Webdings");
 }

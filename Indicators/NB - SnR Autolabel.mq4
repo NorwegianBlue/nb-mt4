@@ -3,7 +3,7 @@
 //|                              Copyright © 2011, Timar Investments |
 //|                               http://www.timarinvestments.com.au |
 //+------------------------------------------------------------------+
-#property copyright "Copyright © 2011, Timar Investments"
+#property copyright "Copyright © 2011-14, Timar Investments"
 #property link      "http://www.timarinvestments.com.au"
 
 #property indicator_chart_window
