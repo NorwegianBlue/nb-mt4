@@ -28,7 +28,7 @@
 
 
 #include <stderror.mqh>
-#include <http51.mqh>
+#include <nbwininet.mqh>
 #include <WinUser32.mqh>
 
 extern string _VERSION_7 = "7";
@@ -38,8 +38,8 @@ extern string StateFile = "NBTT_state.csv";
 extern string ResultsFile = "NBTT_results.csv";
 extern string AppName = "test";
 
-extern string Log_HTTP = ""; //http://forex.plasmatech.com/trade_complete.php?";
-extern string Log_HTTP2 = "https://docs.google.com/macros/exec?service=AKfycbzhcc5KZZ6cpaFU9gVQ1q4R9_vx7qqZO7uhn8He&";
+extern string Log_HTTP = "https://docs.google.com/macros/exec?service=AKfycbzhcc5KZZ6cpaFU9gVQ1q4R9_vx7qqZO7uhn8He&";
+extern string Log_HTTP2 = "";
 extern bool Log_Email = true;
 extern string Log_EmailSubject = "Trade Result";
 
@@ -128,7 +128,7 @@ void OnInit()
     CommentStr[i] = "";
 
   LX[0] = 0;
-  for (i=0; i < ArraySize(LW); i++)
+  for (int i=0; i < ArraySize(LW); i++)
     LX[i+1] = LX[i] + LW[i];
 
   _LoadState();
@@ -933,7 +933,7 @@ bool _LogTradeComplete(
   string extracomment)
 {
   string url = "";
-  int httpStatus[1];
+  int httpStatus;
 
   symbol = StringLower(symbol);
 
@@ -997,7 +997,7 @@ bool _LogTradeComplete(
     SendMail(Log_EmailSubject, mail);
   }
   
-  return (httpStatus[0] == 200);
+  return (httpStatus == 200);
 }
 
 
@@ -1006,7 +1006,8 @@ void _LogTradeResult(int ticket)
   if (!OrderSelect(ticket, SELECT_BY_TICKET, MODE_HISTORY))
     return;
 
-  for (int idx=0; idx<ArraySize(Ticket); idx++)
+  int idx;
+  for (idx=0; idx<ArraySize(Ticket); idx++)
     if (Ticket[idx] == ticket)
       break;
 
