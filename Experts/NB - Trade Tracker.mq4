@@ -61,7 +61,7 @@ extern int    RefreshIntervalMS = 100;
 #define pfx          "nbtt"
 #define fontName     "Calibri"
 #define boldFontName "Arial Black"
-#define fontSize     6
+#define fontSize     10
 
 /*
   Layout
@@ -133,30 +133,23 @@ void OnInit()
 
   _LoadState();
 
-  _CheckForChanges();
-  _UpdateDisplay();  
+  EventSetTimer(1);
 }
 
 
 void OnDeinit(const int reason)
 {
+  EventKillTimer();
   Comment("");
   DeleteAllObjectsWithPrefix(pfx);
 }
 
 
-void OnTick()
+void OnTimer()
 {
-  while(!IsStopped())
-  {
-    RefreshRates();
-    _CheckForChanges();
-    _CheckButtons();
-    _UpdateDisplay();  
-    _SaveStatePeriodically();
-    
-    Sleep(RefreshIntervalMS);
-  }
+  _CheckForChanges();
+  _UpdateDisplay();  
+  _SaveStatePeriodically();
 }
 
 
@@ -167,33 +160,6 @@ bool _IsTicketOpen(int ticket)
       return (true);
 
   return (false);
-}
-
-
-bool _CheckButtonExists(string name)
-{
-  return (ObjectFind(pfx+name) >= 0);
-}
-
-
-void _CheckButtons()
-{
-  if (FirstIteration)
-    return;
-    
-  int row=0;
-  for (int i=0; i<ArraySize(Ticket); i++)
-  {
-    if (Ticket[i] != 0)
-    {
-      if (!_CheckButtonExists("c9r"+(row+2)))
-      {
-        if (OrderSelect(Ticket[i], SELECT_BY_TICKET))
-          MaxSL[i] = OrderStopLoss();
-      }
-      row++;
-    }
-  }
 }
 
 
@@ -307,12 +273,17 @@ void _CheckForChanges()
 
 int _CompareTickets_ByTicket(int index1, int index2)
 {
+  if (Ticket[index1] == 0  &&  Ticket[index2] != 0)
+    return (+1);
+  if (Ticket[index1] != 0  &&  Ticket[index2] == 0)
+    return (-1);
+      
   if (Ticket[index1] > Ticket[index2])
     return (+1);
-  else if (Ticket[index1] < Ticket[index2])
+  if (Ticket[index1] < Ticket[index2])
     return (-1);
-  else
-    return (0);
+  
+  return (0);
 }
 
 
@@ -413,10 +384,10 @@ void _UpdateDisplay()
   int col = 0;
   for (col = 0; col < ArraySize(LXHEADER); col++)
   {
-    SetLabel("lxhead"+col, 0, _GetX(col), _GetY(0), LXHEADER[col], TextColor, 8);
+    SetLabel("lxhead"+col, 0, _GetX(col), _GetY(0), LXHEADER[col], TextColor, fontSize);
     ObjectSetInteger(0, "lxhead"+col, OBJPROP_ZORDER, 1);
 
-    SetLabel("lxhead2"+col,0, _GetX(col), _GetY(1) -5, LXHEADER2[col], TextColor, 8);
+    SetLabel("lxhead2"+col,0, _GetX(col), _GetY(1) -5, LXHEADER2[col], TextColor, fontSize);
     ObjectSetInteger(0, "lxhead2"+col, OBJPROP_ZORDER, 1);
   }
   
@@ -559,8 +530,22 @@ void _UpdateDisplay()
       SetLabel("c7r"+row, 0, _GetX(7), y, _GetAge(OrderOpenTime(), OrderCloseTime()), clr);
       SetLabel("c8r"+row, 0, _GetX(8), y, CommentStr[i] + " | " + OrderComment() + "  " + DebugStr[i], clr);
       
-      SetLabel("c9r"+row, 0, _GetX(9), y, "[Reset Risk]", TextColor);
+      //SetLabel("c9r"+row, 0, _GetX(9), y, "[Reset Risk]", TextColor);
       
+      if (ObjectFind(pfx+"c9r"+row) < 0)
+        ObjectCreate(pfx+"c9r"+row, OBJ_BUTTON, 0, 0,0);
+      
+      ObjectSet(pfx+"c9r"+row, OBJPROP_XDISTANCE, _GetX(9));
+      ObjectSet(pfx+"c9r"+row, OBJPROP_YDISTANCE, y);
+      ObjectSet(pfx+"c9r"+row, OBJPROP_XSIZE, 70);
+      ObjectSet(pfx+"c9r"+row, OBJPROP_BGCOLOR, Black);
+      ObjectSetInteger(0, pfx+"c9r"+row, OBJPROP_BORDER_TYPE, BORDER_FLAT);
+      ObjectSetInteger(0, pfx+"c9r"+row, OBJPROP_FONTSIZE, fontSize);
+      ObjectSetString(0, pfx+"c9r"+row, OBJPROP_FONT, fontName);
+      ObjectSetString(0, pfx+"c9r"+row, OBJPROP_TEXT, "Reset Risk");
+      ObjectSetInteger(0, pfx+"c9r"+row, OBJPROP_COLOR, TextColor);
+      ObjectSetInteger(0, pfx+"c9r"+row, OBJPROP_SELECTABLE, false);
+            
       if ((row % 2) == 0)
         _DrawBackground(y-1, AltBackground);
       else
@@ -583,6 +568,37 @@ void _UpdateDisplay()
       else
         DeleteObject("c"+col+"r"+row);
     }
+  }
+}
+
+
+void OnChartEvent(const int id,
+                  const long& lparam,
+                  const double& dparam,
+                  const string& sparam)
+{
+  switch (id)
+  {
+    case CHARTEVENT_OBJECT_CLICK:
+      if (StringSubstr(sparam, 0, StringLen(sparam)-1) == pfx+"c9r")
+      {
+        int row = (int)StringToInteger(StringSubstr(sparam, StringLen(sparam)-1)) -2;
+        if (row < 0)
+          return;
+        
+        bool updateDisplay = false;
+        if (Ticket[row] !=0 )
+          if (OrderSelect(Ticket[row], SELECT_BY_TICKET))
+          {
+            Print("Reset risk for ticket " + IntegerToString(Ticket[row]));
+            MaxSL[row] = OrderStopLoss();
+            updateDisplay = true;
+          }
+        ObjectSetInteger(0, pfx+"c9r"+(row+2), OBJPROP_STATE, 0);
+        if (updateDisplay)
+          _UpdateDisplay();
+      }
+      break;
   }
 }
 
@@ -1092,7 +1108,7 @@ void DeleteAllObjectsWithPrefix(string prefix)
 }
 
 
-void SetLabel(string name, int corner, int x, int y, string text, color clr=NULL, int size=0, string face=fontName)
+void SetLabel(string name, int corner, int x, int y, string text, color clr=NULL, int size=fontSize, string face=fontName)
 {
   if (text == "")
     return;
