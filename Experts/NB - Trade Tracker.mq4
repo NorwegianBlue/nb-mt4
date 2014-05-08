@@ -568,6 +568,8 @@ void _UpdateDisplay()
       else
         DeleteObject("c"+col+"r"+row);
     }
+    
+    DeleteObject("c9r"+row);
   }
 }
 
