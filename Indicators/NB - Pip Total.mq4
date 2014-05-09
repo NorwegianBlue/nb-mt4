@@ -15,22 +15,29 @@
 
 extern int    _VERSION=2;
 extern string _1=" ] Set nominal size to 0 to calculate raw pips";
-extern double NominalLotSize = 0.2;
+extern double NominalLotSize = 0.0;
 
 
-int init()
+void OnInit()
 {
-  return(0);
 }
 
 
-int deinit()
+void OnDeinit()
 {
-  return(0);
 }
 
 
-int start()
+int OnCalculate(const int rates_total,      // size of input time series
+                const int prev_calculated,  // bars handled in previous call
+                const datetime& time[],     // Time
+                const double& open[],       // Open
+                const double& high[],       // High
+                const double& low[],        // Low
+                const double& close[],      // Close
+                const long& tick_volume[],  // Tick Volume
+                const long& volume[],       // Real Volume
+                const int& spread[])        // Spread
 {
   double profit_ = 0.0;
   double profitPips = 0.0;
@@ -55,6 +62,8 @@ int start()
     "  Target: " + DoubleToStr(targetPips, 0) + " pips";
   
   Comment(s);
+  
+  return (0);
 }
 
 
