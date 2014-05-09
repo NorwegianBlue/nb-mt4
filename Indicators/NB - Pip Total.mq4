@@ -32,21 +32,21 @@ int deinit()
 
 int start()
 {
-  double profit$ = 0.0;
+  double profit_ = 0.0;
   double profitPips = 0.0;
   double winPips = 0.0;
   double losePips = 0.0;
   double riskPips = 0.0;
   double targetPips = 0.0;
-  int closedCount = ClosedTrades(profit$, winPips, losePips, riskPips, targetPips);
+  int closedCount = ClosedTrades(profit_, winPips, losePips, riskPips, targetPips);
   string s =
-    "Closed: " + closedCount + "  $" + DoubleToStr(profit$, 2) + "  " + DoubleToStr(winPips+losePips, 0) + " (" + DoubleToStr(winPips,0) + "W " + DoubleToStr(MathAbs(losePips),0)+ "L) pips";
+    "Closed: " + closedCount + "  $" + DoubleToStr(profit_, 2) + "  " + DoubleToStr(winPips+losePips, 0) + " (" + DoubleToStr(winPips,0) + "W " + DoubleToStr(MathAbs(losePips),0)+ "L) pips";
     
   riskPips = 0.0;
   targetPips = 0.0;
-  int openCount = OpenTrades(profit$, winPips, losePips, riskPips, targetPips);
+  int openCount = OpenTrades(profit_, winPips, losePips, riskPips, targetPips);
   s = s +
-    "   Open: " + openCount + "  $" + DoubleToStr(profit$, 2) + "  " + DoubleToStr(winPips+losePips, 0) + " (" + DoubleToStr(winPips,0) + "W " + DoubleToStr(MathAbs(losePips),0)+ "L) pips";
+    "   Open: " + openCount + "  $" + DoubleToStr(profit_, 2) + "  " + DoubleToStr(winPips+losePips, 0) + " (" + DoubleToStr(winPips,0) + "W " + DoubleToStr(MathAbs(losePips),0)+ "L) pips";
   
   s = s +
     "  Risk: " + DoubleToStr(riskPips, 0) + " pips";
@@ -58,7 +58,7 @@ int start()
 }
 
 
-int CalcTrades(int mode,  double& profit$, double& winPips, double& losePips, double& riskPips, double& targetPips)
+int CalcTrades(int mode,  double& profit_, double& winPips, double& losePips, double& riskPips, double& targetPips)
 {
   int count;
   int hstTotal;
@@ -67,7 +67,7 @@ int CalcTrades(int mode,  double& profit$, double& winPips, double& losePips, do
   else
     hstTotal = OrdersTotal();
   
-  profit$ = 0.0;
+  profit_ = 0.0;
   winPips = 0.0;
   losePips = 0.0;
   riskPips = 0.0;
@@ -80,7 +80,7 @@ int CalcTrades(int mode,  double& profit$, double& winPips, double& losePips, do
       if (OrderType() == OP_BUY  ||  OrderType() == OP_SELL)
       {
         count++;
-        profit$ = profit$ + OrderProfit() + OrderSwap();
+        profit_ = profit_ + OrderProfit() + OrderSwap();
         
         double diff, riskdiff, targetdiff;
         if (OrderType() == OP_BUY)
@@ -127,15 +127,15 @@ int CalcTrades(int mode,  double& profit$, double& winPips, double& losePips, do
 }
 
 
-int ClosedTrades(double& profit$, double& winPips, double& losePips, double& riskPips, double& targetPips)
+int ClosedTrades(double& profit_, double& winPips, double& losePips, double& riskPips, double& targetPips)
 {
-  return (CalcTrades(MODE_HISTORY, profit$, winPips, losePips, riskPips, targetPips));
+  return (CalcTrades(MODE_HISTORY, profit_, winPips, losePips, riskPips, targetPips));
 }
 
 
-int OpenTrades(double& profit$, double& winPips, double& losePips, double& riskPips, double& targetPips)
+int OpenTrades(double& profit_, double& winPips, double& losePips, double& riskPips, double& targetPips)
 {
-  return (CalcTrades(MODE_OPEN, profit$, winPips, losePips, riskPips, targetPips));
+  return (CalcTrades(MODE_OPEN, profit_, winPips, losePips, riskPips, targetPips));
 }
 
 
