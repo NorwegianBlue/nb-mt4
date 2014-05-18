@@ -38,7 +38,7 @@ extern string StateFile = "NBTT_state.csv";
 extern string ResultsFile = "NBTT_results.csv";
 extern string AppName = "test";
 
-extern string Log_HTTP = "https://docs.google.com/macros/exec?service=AKfycbzhcc5KZZ6cpaFU9gVQ1q4R9_vx7qqZO7uhn8He&";
+extern string Log_HTTP = "https://script.google.com/macros/s/AKfycbx20ebKSQ9CJcoiky1YeJSC9zOq8kzniKE-f1QmfY0K1OpL3OAE/exec";
 extern string Log_HTTP2 = "";
 extern bool Log_Email = true;
 extern string Log_EmailSubject = "Trade Result";
