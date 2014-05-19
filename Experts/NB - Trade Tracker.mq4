@@ -38,7 +38,7 @@ extern string StateFile = "NBTT_state.csv";
 extern string ResultsFile = "NBTT_results.csv";
 extern string AppName = "test";
 
-extern string Log_HTTP = "https://script.google.com/macros/s/AKfycbx20ebKSQ9CJcoiky1YeJSC9zOq8kzniKE-f1QmfY0K1OpL3OAE/exec";
+extern string Log_HTTP = "https://script.google.com/macros/s/AKfycbx20ebKSQ9CJcoiky1YeJSC9zOq8kzniKE-f1QmfY0K1OpL3OAE/exec?";
 extern string Log_HTTP2 = "";
 extern bool Log_Email = true;
 extern string Log_EmailSubject = "Trade Result";
@@ -985,10 +985,16 @@ bool _LogTradeComplete(
   
   string result;
   if (Log_HTTP != "")
+  {
+    Print("httpGet: " + Log_HTTP + url);
     result = httpGET(Log_HTTP + url, httpStatus);
+  }
   
   if (Log_HTTP2 != "")
+  {
+    Print("httpGet: " + Log_HTTP2 + url);
     result = httpGET(Log_HTTP2 + url, httpStatus);
+  }
   
   if (Log_Email)
   {
