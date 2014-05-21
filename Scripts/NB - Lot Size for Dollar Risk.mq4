@@ -1,15 +1,15 @@
 //+------------------------------------------------------------------+
 //|                                NB - Lot Size for Dollar Risk.mq4 |
-//|                                  Copyright © 2013, NorwegianBlue |
+//|                                  Copyright © 2014, NorwegianBlue |
 //|           http://sites.google.com/site/norwegianbluesmt4junkyard |
 //+------------------------------------------------------------------+
-#property copyright "Copyright © 2012, NorwegianBlue"
+#property copyright "Copyright © 2012-2014, NorwegianBlue"
 #property link      "http://sites.google.com/site/norwegianbluesmt4junkyard"
 
 #property show_inputs 
 
 
-extern double Risk_$ = 10.0;
+extern double Risk_Dollar = 10.0;
 extern double Risk_Pips = 24.0;
 
 
@@ -35,13 +35,13 @@ int start()
 {
   POINT_FACTOR = GuessPointFactor();
   
-  double risk$ = Risk_$;
-  double lotSize = (risk$ / (Risk_Pips*POINT_FACTOR)) / MarketInfo(Symbol(), MODE_TICKVALUE);
+  double riskDollar = Risk_Dollar;
+  double lotSize = (riskDollar / (Risk_Pips*POINT_FACTOR)) / MarketInfo(Symbol(), MODE_TICKVALUE);
   
-  //double risk$ = AcBal() * (Risk_Pct/100.0);
-  //double lotSize = (risk$ / (Risk_Pips*POINT_FACTOR)) / MarketInfo(Symbol(), MODE_TICKVALUE);
+  //double riskDollar = AcBal() * (Risk_Pct/100.0);
+  //double lotSize = (riskDollar / (Risk_Pips*POINT_FACTOR)) / MarketInfo(Symbol(), MODE_TICKVALUE);
 
-  Alert(Symbol() + " " + DoubleToStr(lotSize, 2) + " lots  (AcBal. $" + DoubleToStr(AcBal(),0) + ", Risk $" + DoubleToStr(Risk_$, 2) + " " + DoubleToStr(Risk_$/AcBal()*100,1) + "%, Stop " + DoubleToStr(Risk_Pips, 1) + " pips)");
+  Alert(Symbol() + " " + DoubleToStr(lotSize, 2) + " lots  (AcBal. $" + DoubleToStr(AcBal(),0) + ", Risk $" + DoubleToStr(Risk_Dollar, 2) + " " + DoubleToStr(Risk_Dollar/AcBal()*100,1) + "%, Stop " + DoubleToStr(Risk_Pips, 1) + " pips)");
    
   return(0);
 }
